@@ -40,6 +40,7 @@ class data_preprocess(object):
             data_buffer_temp , training_result =self.__Databuffer(self.Stock_infor[1:])
             if data_buffer_temp is not None:
                 data_buffer_temp.append(training_result)
+                print(len(data_buffer_temp))
                 self.DataBuffer_all.append(data_buffer_temp)
         self.Save_csv()
     def __Databuffer(self,singleday_data,buffer_size=None):
