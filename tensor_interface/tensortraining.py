@@ -23,6 +23,8 @@ import os
 
 import numpy as np
 import tensorflow as tf
+import csv
+
 
 tf.logging.set_verbosity(tf.logging.INFO)
 
@@ -31,7 +33,6 @@ class TensorTraining(object):
     
     def __init__(self):
         print("TensorTraining")
-        tf.logging.set_verbosity(tf.logging.INFO)
     
     def TensorRun(self):
         print("Start training program")
@@ -50,9 +51,9 @@ class TensorTraining(object):
             filename=stock_training, target_dtype=np.int, features_dtype=np.float)
         test_set = tf.contrib.learn.datasets.base.load_csv_with_header(
             filename=stock_test, target_dtype=np.int, features_dtype=np.float)
-        print(training_set.data)
-        print(test_set.data)
-        print(test_set.target)
+        #print(training_set.data)
+        #print(test_set.data)
+        #print(test_set.target)
         validation_metrics = {
             "accuracy":
                 tf.contrib.learn.MetricSpec(
@@ -74,15 +75,15 @@ class TensorTraining(object):
             metrics=validation_metrics,
             early_stopping_metric="loss",
             early_stopping_metric_minimize=True,
-            early_stopping_rounds=800)
+            early_stopping_rounds=4000)
         # Specify that all features have real-value data
-        feature_columns = [tf.contrib.layers.real_valued_column("", dimension=62)]
+        feature_columns = [tf.contrib.layers.real_valued_column("", dimension=47)]
 
         # Build 3 layer DNN with 10, 20, 10 units respectively.
         classifier = tf.contrib.learn.DNNClassifier(
             feature_columns=feature_columns,
-            hidden_units=[10, 20, 20,10],
-            n_classes=4,
+            hidden_units=[64,64,64,64,64,64,64,64,64,64,64,64,128,128,128,128,128],
+            n_classes=21,
             model_dir="./stock_model",
             config=tf.contrib.learn.RunConfig(save_checkpoints_secs=1))  
         classifier.fit(x=training_set.data,
@@ -91,10 +92,17 @@ class TensorTraining(object):
                  monitors=[validation_monitor])
         
         # Evaluate accuracy.
-        print()
-        print()
         accuracy_score = classifier.evaluate(x=test_set.data, y=test_set.target)["accuracy"]
         print("Accuracy: {0:f}".format(accuracy_score))
+        new_samples=np.array(test_set.data,dtype=float)
+        
+        save_data=[]
+        for i in list(classifier.predict(new_samples)):
+            temp=[i]
+            save_data.append(temp)
+        with open('output.csv','w') as csvfileoutput:
+            writer = csv.writer(csvfileoutput,lineterminator='\n')
+            writer.writerows(save_data)
     def Load_data_cvs(self,filename_input=None):
         '''
         cvsfile IO interface
@@ -102,7 +110,6 @@ class TensorTraining(object):
                 
                 The code will consider all the data in a line to be the data used for the training, and the last data in each line is the result
         '''
-        
         if filename_input is None:
             self.DataFileName=['../dataIO/stockinfor.csv']
         else:
@@ -126,13 +133,9 @@ class TensorTraining(object):
             
             coord = tf.train.Coordinator()  
             threads = tf.train.start_queue_runners(coord=coord) 
-            lable=0
             for _ in range(1000):
                 try:
                     example, label = sess.run([features,tensor_array_raw[-1]])  
-                    lable=lable+1
-                    print(example)
-                    print(lable)
                     #print(example,label)
                 except tf.errors.OutOfRangeError:  
                     print ('Done !!!')

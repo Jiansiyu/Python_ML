@@ -37,18 +37,25 @@ class data_preprocess(object):
         self.Low_position=self.Stock_header_infor.index('Low')
         self.Close_position=self.Stock_header_infor.index('Close')
         self.Volume_position=self.Stock_header_infor.index('Volume')
-        self.pecentage_change_position=self.Stock_header_infor.index('pecentage_change')
-        self.range_position =self.Stock_header_infor.index('range')
-        self.range_position =self.Stock_header_infor.index('int_range\n')
+        #self.pecentage_change_position=self.Stock_header_infor.index('pecentage_change')
+        #self.range_position =self.Stock_header_infor.index('range')
+        #self.range_position =self.Stock_header_infor.index('int_range\n')
         #range_change_position=Stock_header_infor.index('range')
         # get the individual nasdaq conpany name
+        data_buffer_all_withoutheader=[]
+        data_header=[]
         for Single_line in Stock_list_lines[1:]:
             self.Stock_infor=Single_line.split(',')
-            data_buffer_temp , training_result =self.__Databuffer(self.Stock_infor[:],30)
+            data_buffer_temp , training_result =self.__Databuffer(self.Stock_infor[:],6)
             if data_buffer_temp is not None:
                 data_buffer_temp.append(training_result)
                 print(len(data_buffer_temp))
-                self.DataBuffer_all.append(data_buffer_temp)
+                data_buffer_all_withoutheader.append(data_buffer_temp)
+        data_header.append(len(data_buffer_all_withoutheader))
+        data_header.append(len(data_buffer_all_withoutheader[0])-1)
+        self.DataBuffer_all.append(data_header)
+        for i in data_buffer_all_withoutheader:
+            self.DataBuffer_all.append(i)
         #self.Save_csv()
     def __Databuffer(self,singleday_data,buffer_size=None):
         '''
