@@ -20,14 +20,17 @@ from __future__ import division
 from __future__ import print_function
 
 import os
+# disable the debug display for the TensorFlow
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # or any {'0', '1', '2'}
 
 import numpy as np
 import tensorflow as tf
 import csv
 
+tf.logging.set_verbosity(tf.logging.ERROR)
 
-tf.logging.set_verbosity(tf.logging.INFO)
-
+import logging
+logging.getLogger().setLevel(logging.INFO)
 
 class TensorTraining(object):
     
@@ -47,8 +50,14 @@ class TensorTraining(object):
     def TensorRun(self):
         print("Start training program")
     
-    def Load_data_train_test(self,filename_input=None,train_dataset_filename=None,test_dataset_filename=None):
+    def Load_data_train_test(self,train_dataset_filename=None,test_dataset_filename=None,evaluatedata_array=None,evaluatedata_csvfile=None):
+        '''
+        @note: 
         
+        @var var: 
+        
+        '''
+        print('Start Training')
         train_dataset_filename_local=self.Train_csvfilname
         if train_dataset_filename is not None:
             train_dataset_filename_local=train_dataset_filename
@@ -107,16 +116,34 @@ class TensorTraining(object):
         # Evaluate accuracy.
         accuracy_score = classifier.evaluate(x=test_set.data, y=test_set.target)["accuracy"]
         print("Accuracy: {0:f}".format(accuracy_score))
-        new_samples=np.array(test_set.data,dtype=float)
         
+        #predict the given array
+        predictresult_list=[]
+        if evaluatedata_array is not None or evaluatedata_csvfile is not None:
+            if evaluatedata_array is not None:
+                new_samples=np.array(evaluatedata_array.data,dtype=float)
+                predictresult_list = list(classifier.predict(new_samples))
+            if evaluatedata_csvfile is not None:
+                samples_test = os.path.join(os.path.dirname(__file__), evaluatedata_csvfile)
+                samples_test = tf.contrib.learn.datasets.base.load_csv_with_header(
+                    filename=samples_test, target_dtype=np.int, features_dtype=np.float)
+                new_samples=np.array(samples_test.data,dtype=float)
+                predictresult_list = list(classifier.predict(new_samples))
+        return accuracy_score, predictresult_list
+    
+        '''new_samples=np.array(test_set.data,dtype=float)
         save_data=[]
         for i in list(classifier.predict(new_samples)):
             temp=[i]
             save_data.append(temp)
         with open('output.csv','w') as csvfileoutput:
             writer = csv.writer(csvfileoutput,lineterminator='\n')
-            writer.writerows(save_data)    
-            
+            writer.writerows(save_data)'''    
+    def Predicted_result(self):
+        '''
+        '''
+        print('loading the training data and predict the result by given array')
+        
     def Load_data_cvs(self,filename_input=None):
         '''
         cvsfile IO interface
