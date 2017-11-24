@@ -26,6 +26,7 @@ class data_preprocess(object):
         if filename_in is not None:
             Stock_list_filename=filename_in
         data_path='./'
+        
         with open(data_path+Stock_list_filename) as Stock_list_io:
             Stock_list_lines=Stock_list_io.readlines()
         # get the information position  
@@ -113,8 +114,8 @@ class data_preprocess(object):
 if __name__ == '__main__':
     test=data_preprocess()
     test.cvsData_preprocess()
-    test.Save_csv()
+    test.Save_csv('train_dataset.csv')
     test_date=data_preprocess()
     test_date.cvsData_preprocess(filename_in='stock_test.csv')
-    test_date.Save_csv('train_test.csv')
+    test_date.Save_csv('test_dataset.csv')
     

@@ -12,3 +12,8 @@ Machine learning progrem based on Tensorflow
          GUI
          ...
 '''
+from dataIO.data_preprocess import data_preprocess
+from tensor_interface.tensortraining import TensorTraining
+from training_evaluation.TrainingEvaluation import TrainingEvaluation
+
+print("test main")

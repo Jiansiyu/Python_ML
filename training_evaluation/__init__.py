@@ -1,1 +1,3 @@
-from tensor_interface.tensortraining import TensorTraining
+__all__ = ['TrainingEvaluation']
+from training_evaluation.TrainingEvaluation import TrainingEvaluation
+

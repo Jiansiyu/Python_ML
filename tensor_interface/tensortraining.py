@@ -31,29 +31,41 @@ tf.logging.set_verbosity(tf.logging.INFO)
 
 class TensorTraining(object):
     
-    def __init__(self):
+    def __init__(self,train_dataset_csvfilename=None,test_dataset_csv_filename=None):
         print("TensorTraining")
-    
+        
+        
+        # load the test and train data set 
+        self.Train_csvfilname='../dataIO/train_dataset.csv'
+        if train_dataset_csvfilename is not None:
+            self.Train_csvfilname=train_dataset_csvfilename
+            
+        self.Test_csvfilename='../dataIO/test_dataset.csv'
+        if test_dataset_csv_filename is not None:
+            self.Test_csvfilename=test_dataset_csv_filename
+        
     def TensorRun(self):
         print("Start training program")
     
-    def Load_data_train_test(self,filename_input=None):
-        if filename_input is None:
-            self.DataFileName=['../dataIO/stockinfor.csv']
-        else:
-            self.DataFileName=filename_input
+    def Load_data_train_test(self,filename_input=None,train_dataset_filename=None,test_dataset_filename=None):
         
-        print("Load Data :", self.DataFileName)
-        stock_training = os.path.join(os.path.dirname(__file__), self.DataFileName[0])
-        stock_test = os.path.join(os.path.dirname(__file__), '../dataIO/train_test.csv')
+        train_dataset_filename_local=self.Train_csvfilname
+        if train_dataset_filename is not None:
+            train_dataset_filename_local=train_dataset_filename
+        
+        test_dataset_filename_local=self.Test_csvfilename
+        if test_dataset_filename is not None:
+            test_dataset_filename_local=test_dataset_filename
+        
+        
+        stock_training = os.path.join(os.path.dirname(__file__), train_dataset_filename_local)
+        stock_test = os.path.join(os.path.dirname(__file__), test_dataset_filename_local)
         
         training_set = tf.contrib.learn.datasets.base.load_csv_with_header(
             filename=stock_training, target_dtype=np.int, features_dtype=np.float)
         test_set = tf.contrib.learn.datasets.base.load_csv_with_header(
             filename=stock_test, target_dtype=np.int, features_dtype=np.float)
-        #print(training_set.data)
-        #print(test_set.data)
-        #print(test_set.target)
+        
         validation_metrics = {
             "accuracy":
                 tf.contrib.learn.MetricSpec(
@@ -76,8 +88,9 @@ class TensorTraining(object):
             early_stopping_metric="loss",
             early_stopping_metric_minimize=True,
             early_stopping_rounds=4000)
+        
         # Specify that all features have real-value data
-        feature_columns = [tf.contrib.layers.real_valued_column("", dimension=47)]
+        feature_columns = [tf.contrib.layers.real_valued_column("", dimension=40)]
 
         # Build 3 layer DNN with 10, 20, 10 units respectively.
         classifier = tf.contrib.learn.DNNClassifier(
@@ -88,7 +101,7 @@ class TensorTraining(object):
             config=tf.contrib.learn.RunConfig(save_checkpoints_secs=1))  
         classifier.fit(x=training_set.data,
                  y=training_set.target,
-                 steps=2000,
+                 steps=4000,
                  monitors=[validation_monitor])
         
         # Evaluate accuracy.
@@ -102,7 +115,8 @@ class TensorTraining(object):
             save_data.append(temp)
         with open('output.csv','w') as csvfileoutput:
             writer = csv.writer(csvfileoutput,lineterminator='\n')
-            writer.writerows(save_data)
+            writer.writerows(save_data)    
+            
     def Load_data_cvs(self,filename_input=None):
         '''
         cvsfile IO interface
@@ -121,7 +135,7 @@ class TensorTraining(object):
         key, value=reader.read(filename_queue)
         tf.Print(key,[key])
         record_defaults = []
-        for i in range(64):
+        for _ in range(64):
             record_defaults.append([0.0])
         tensor_array_raw=tf.decode_csv(value, record_defaults=record_defaults)
         features =tf.stack(tensor_array_raw[0:-1])
@@ -147,8 +161,6 @@ class TensorTraining(object):
                     #print(example,label)
                 except tf.errors.OutOfRangeError:  
                     break'''
-                
-         
             coord.request_stop()
             coord.join(threads=threads)
             sess.close()
