@@ -12,7 +12,7 @@
           the evaluation result will be saved in a file
 '''
 import csv
-
+import time
 import sys
 from time import sleep
 sys.path.append('../dataIO')
@@ -133,7 +133,11 @@ class TrainingEvaluation(object):
             raw_csv_date_file_local=raw_csv_data_file
         
         time_step_counter=0
+        
+        Evaluation_array_all=[]  # buffer the evaluation result [[real, expected]]
         fileEnd_flag_temp=True
+        
+        evaluation_csvresult_filename='../Data/TrainingEvaluation/evaluationResult'+str(time.time())+'.csv'
         while fileEnd_flag_temp:
             '''
             generate the training and the test data 
@@ -141,23 +145,31 @@ class TrainingEvaluation(object):
             '''
             # loop to the next data point
             time_step_counter=time_step_counter+1
-            train_raw_csv_filename_temp, fileEnd_flag_temp=self.__Get_single_csv_data(time_step_counter,training_timelength=500)
+            train_raw_csv_filename_temp, fileEnd_flag_temp=self.__Get_single_csv_data(time_step_counter,training_timelength=510)
             
-            train_dataset_filename='../Data/tmp/train_dataset_temp'+ str(time_step_counter)+'.csv'
-            test_dataset_filename='../Data/tmp/test_dataset_temp'+ str(time_step_counter)+'.csv'
+            train_dataset_filename='../Data/tmp/train_dataset_temp'+ str(time.time())+'.csv'
+            test_dataset_filename='../Data/tmp/test_dataset_temp'+ str(time.time())+'.csv'
+            evaluation_dataset_filename='../Data/tmp/evaluation_dataset_temp'+ str(time.time())+'.csv'
+            trainModel_dir='../Data/TrainingModel/'+str(time.time())
             
-            csv_preprocess=data_preprocess()
+            csv_preprocess=data_preprocess(raw_csv_date_file_local)
             csv_preprocess.cvsData_preprocess(train_raw_csv_filename_temp)
-            csv_preprocess.Save_csv(train_dataset_filename)
+            csv_preprocess.Save_csv_training_test(trainFilename=train_dataset_filename,evaluationFilename=evaluation_dataset_filename)
             
-            csv_preprocess1=data_preprocess()
+            csv_preprocess1=data_preprocess(raw_csv_date_file_local)
             csv_preprocess1.cvsData_preprocess(train_raw_csv_filename_temp)
             csv_preprocess1.Save_csv(test_dataset_filename)
             # finish generate the training data
             
+            #train_model=TensorTraining(train_dataset_csvfilename=train_dataset_filename,test_dataset_csv_filename=test_dataset_filename,training_model_dir=trainModel_dir)
             train_model=TensorTraining(train_dataset_csvfilename=train_dataset_filename,test_dataset_csv_filename=test_dataset_filename)
-            train_model.Load_data_train_test()
-            
+            accuracy,evaluation_result_temp=train_model.Load_data_train_test(evaluatedata_csvfile=evaluation_dataset_filename)
+            for i in evaluation_result_temp:
+                Evaluation_array_all.append(i)
+                print(Evaluation_array_all)
+                with open(evaluation_csvresult_filename,'w') as evaluationresult_io:
+                    writer = csv.writer(evaluationresult_io,lineterminator='\n')
+                    writer.writerows(Evaluation_array_all)
 if __name__ == "__main__":
     test=TrainingEvaluation()
     test.Run()

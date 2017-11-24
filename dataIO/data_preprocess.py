@@ -25,9 +25,9 @@ class data_preprocess(object):
         Stock_list_filename='googlefinance.csv'
         if filename_in is not None:
             Stock_list_filename=filename_in
-        data_path='./'
         
-        with open(data_path+Stock_list_filename) as Stock_list_io:
+        
+        with open(Stock_list_filename) as Stock_list_io:
             Stock_list_lines=Stock_list_io.readlines()
         # get the information position  
         
@@ -151,7 +151,7 @@ class data_preprocess(object):
         evaluationPeriod_local=1
         if evaluationPeriod is not None:
             evaluationPeriod_local=evaluationPeriod
-        print(self.DataBuffer_all[-1])
+        #print(self.DataBuffer_all[-1])
         
         
         if evaluationPeriod_local+testDataPeriod_local < len(self.DataBuffer_all)+1 :

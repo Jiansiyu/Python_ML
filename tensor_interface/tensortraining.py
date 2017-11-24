@@ -28,6 +28,10 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # or any {'0', '1', '2'}
 import numpy as np
 import tensorflow as tf
 import csv
+# config = tf.ConfigProto()
+# config.intra_op_parallelism_threads = 44
+# config.inter_op_parallelism_threads = 44
+# tf.Session(config=config)
 
 tf.logging.set_verbosity(tf.logging.ERROR)
 
@@ -55,7 +59,7 @@ class TensorTraining(object):
     def TensorRun(self):
         print("Start training program")
     
-    def Load_data_train_test(self,train_dataset_filename=None,test_dataset_filename=None,evaluatedata_array=None,evaluatedata_csvfile=None):
+    def Load_data_train_test(self,train_dataset_filename=None,test_dataset_filename=None,evaluatedata_array=None,evaluatedata_csvfile=None,training_model_dir=None):
         '''
         @note: 
         
@@ -71,6 +75,10 @@ class TensorTraining(object):
         if test_dataset_filename is not None:
             test_dataset_filename_local=test_dataset_filename
         
+        self.TrainingModel_SaveDir="../Data/TrainingModel"
+        if training_model_dir is not None:
+            self.TrainingModel_SaveDir=training_model_dir
+            
         print(" >>Training csv file: ",train_dataset_filename_local)
         print(" >>Test csv file: ",test_dataset_filename_local)
         
@@ -128,7 +136,23 @@ class TensorTraining(object):
         
         #predict the given array
         predictresult_list=[]
-        if evaluatedata_array is not None or evaluatedata_csvfile is not None:
+        
+        if evaluatedata_csvfile is not None:
+            samples_test = os.path.join(os.path.dirname(__file__), evaluatedata_csvfile)
+            samples_test = tf.contrib.learn.datasets.base.load_csv_with_header(
+                    filename=samples_test, target_dtype=np.int, features_dtype=np.float)
+            new_samples=np.array(samples_test.data,dtype=float)
+            predictresult_list = list(classifier.predict(new_samples))
+            
+            loop_counter_temp=0
+            evaluation_result_array=[]
+            while loop_counter_temp < len(predictresult_list):
+                evaluation_result_array.append([samples_test.target[loop_counter_temp],predictresult_list[loop_counter_temp]])
+                loop_counter_temp=loop_counter_temp+1
+                print(evaluation_result_array)
+            return accuracy_score,evaluation_result_array
+                
+            ''' if evaluatedata_array is not None or evaluatedata_csvfile is not None:
             if evaluatedata_array is not None:
                 new_samples=np.array(evaluatedata_array.data,dtype=float)
                 predictresult_list = list(classifier.predict(new_samples))
@@ -138,7 +162,7 @@ class TensorTraining(object):
                     filename=samples_test, target_dtype=np.int, features_dtype=np.float)
                 new_samples=np.array(samples_test.data,dtype=float)
                 predictresult_list = list(classifier.predict(new_samples))
-        return accuracy_score, predictresult_list
+        return accuracy_score, predictresult_list'''
     
         '''new_samples=np.array(test_set.data,dtype=float)
         save_data=[]
