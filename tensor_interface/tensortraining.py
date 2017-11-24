@@ -20,6 +20,8 @@ from __future__ import division
 from __future__ import print_function
 
 import os
+from time import sleep
+
 # disable the debug display for the TensorFlow
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # or any {'0', '1', '2'}
 
@@ -34,7 +36,7 @@ logging.getLogger().setLevel(logging.INFO)
 
 class TensorTraining(object):
     
-    def __init__(self,train_dataset_csvfilename=None,test_dataset_csv_filename=None):
+    def __init__(self,train_dataset_csvfilename=None,test_dataset_csv_filename=None,training_model_dir=None):
         print("TensorTraining")
         
         
@@ -46,7 +48,10 @@ class TensorTraining(object):
         self.Test_csvfilename='../dataIO/test_dataset.csv'
         if test_dataset_csv_filename is not None:
             self.Test_csvfilename=test_dataset_csv_filename
-        
+            
+        self.TrainingModel_SaveDir="../Data/TrainingModel"
+        if training_model_dir is not None:
+            self.TrainingModel_SaveDir=training_model_dir
     def TensorRun(self):
         print("Start training program")
     
@@ -66,6 +71,8 @@ class TensorTraining(object):
         if test_dataset_filename is not None:
             test_dataset_filename_local=test_dataset_filename
         
+        print(" >>Training csv file: ",train_dataset_filename_local)
+        print(" >>Test csv file: ",test_dataset_filename_local)
         
         stock_training = os.path.join(os.path.dirname(__file__), train_dataset_filename_local)
         stock_test = os.path.join(os.path.dirname(__file__), test_dataset_filename_local)
@@ -99,14 +106,16 @@ class TensorTraining(object):
             early_stopping_rounds=4000)
         
         # Specify that all features have real-value data
-        feature_columns = [tf.contrib.layers.real_valued_column("", dimension=40)]
+        
+        
+        feature_columns = [tf.contrib.layers.real_valued_column("", dimension=len(training_set.data[0]))]
 
         # Build 3 layer DNN with 10, 20, 10 units respectively.
         classifier = tf.contrib.learn.DNNClassifier(
             feature_columns=feature_columns,
             hidden_units=[64,64,64,64,64,64,64,64,64,64,64,64,128,128,128,128,128],
             n_classes=21,
-            model_dir="./stock_model",
+            model_dir=self.TrainingModel_SaveDir,
             config=tf.contrib.learn.RunConfig(save_checkpoints_secs=1))  
         classifier.fit(x=training_set.data,
                  y=training_set.target,

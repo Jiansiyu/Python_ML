@@ -21,7 +21,7 @@ from tensortraining import TensorTraining
 from data_preprocess import data_preprocess
 
 class TrainingEvaluation(object):
-    def __init__(self,evaluation_step=None,training_timelength=None,raw_csv_data_file=None):
+    def __init__(self,evaluation_step=None,training_timelength=None,raw_csv_data_file=None,evaluation_result=None):
         
         '''
         
@@ -47,7 +47,10 @@ class TrainingEvaluation(object):
             self.raw_csv_date_file="../dataIO/googlefinance.csv"
         else:
             self.raw_csv_date_file=raw_csv_data_file
-            
+        
+        self.Evaluation_result="../Data/TrainingEvaluation/evaluation_result.csv"
+        if evaluation_result is not None:
+            self.Evaluation_result=evaluation_result    
             
     def __Get_single_csv_data(self,training_timelength_begin,training_timelength=None,raw_csv_data_filename_in=None,output_filename=None):
         
@@ -108,16 +111,10 @@ class TrainingEvaluation(object):
         with open(output_filename_local,'w') as csvfileoutput:
             writer = csv.writer(csvfileoutput,lineterminator='\n')
             writer.writerows(csv_save_buffer)
-        
-        print( training_timelength_begin+training_timelength_local)
-        print(len(Stock_list_lines)+1)
-       
-        
+         
         if training_timelength_begin+training_timelength_local >= len(Stock_list_lines)+1:
-            print('false')
             return output_filename_local,False            
         else:
-            print('true')
             return output_filename_local,True
             
     def Run(self,evaluation_step=None,training_timelength=None,raw_csv_data_file=None):
@@ -138,6 +135,10 @@ class TrainingEvaluation(object):
         time_step_counter=0
         fileEnd_flag_temp=True
         while fileEnd_flag_temp:
+            '''
+            generate the training and the test data 
+            tranning the model 
+            '''
             # loop to the next data point
             time_step_counter=time_step_counter+1
             train_raw_csv_filename_temp, fileEnd_flag_temp=self.__Get_single_csv_data(time_step_counter,training_timelength=500)
@@ -153,6 +154,10 @@ class TrainingEvaluation(object):
             csv_preprocess1.cvsData_preprocess(train_raw_csv_filename_temp)
             csv_preprocess1.Save_csv(test_dataset_filename)
             # finish generate the training data
+            
+            train_model=TensorTraining(train_dataset_csvfilename=train_dataset_filename,test_dataset_csv_filename=test_dataset_filename)
+            train_model.Load_data_train_test()
+            
 if __name__ == "__main__":
     test=TrainingEvaluation()
     test.Run()

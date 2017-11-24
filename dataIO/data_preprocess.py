@@ -50,7 +50,7 @@ class data_preprocess(object):
             data_buffer_temp , training_result =self.__Databuffer(self.Stock_infor[:],6)
             if data_buffer_temp is not None:
                 data_buffer_temp.append(training_result)
-                print(len(data_buffer_temp))
+                #print(len(data_buffer_temp))
                 data_buffer_all_withoutheader.append(data_buffer_temp)
         data_header.append(len(data_buffer_all_withoutheader))
         data_header.append(len(data_buffer_all_withoutheader[0])-1)
@@ -108,14 +108,90 @@ class data_preprocess(object):
         with open(self.filenameSave,'w') as csvfileoutput:
             writer = csv.writer(csvfileoutput,lineterminator='\n')
             writer.writerows(self.DataBuffer_all)
+        
+        
+    def Save_csv_training_test(self,trainFilename=None,testFilename=None,testDataPeriod=None,evaluationFilename=None,evaluationPeriod=None):
+        '''
+        @note: Save_csv_training_test function is used for generate the training data,test data and the evaluation data
+        @ideas: The motivation for this function is that from the data array use the first xxx groups of data as the training 
+                data, and use the last several groups of data as the test data, and us the last one(changable) data as the evaluation data. 
+                This mainly used for the training evaluation function. 
+        
+        @suggestions: for V1.0.0, I am trying to evaluate just the latest one day. and use all the rest to be the training data.
+                      In this way, I would evaluate whether the training becomes better if I just predict the next day result.
+        
+        @var 
+                trainFilename:  filename for the generated training data set
+                
+                testFilename:  filename for the generated test data set
+                
+                testDataPeriod: how many days (groups) of data want to used as the training data [0 disable this output, recommend for v1.0.0 ] default 0
+                
+                evaluationFilename: the generated filename for the evaluation data
+                
+                evaluationPeriod: the time period that want to predict. By default this should be 1, which means current training result is only used for the next day 
+        '''
+        
+        trainFilename_local="../Data/tmp/train_dataset.csv"
+        if trainFilename is not None:
+            trainFilename_local=trainFilename
+        
+        testFilename_local="../Data/tmp/test_dataset.csv"
+        if testFilename is not None:
+            testFilename_local=testFilename
+        
+        evaluationFilename_local="../Data/tmp/evaluation_dataset.csv"
+        if evaluationFilename is not None:
+            evaluationFilename_local=evaluationFilename
+        
+        testDataPeriod_local=0
+        if testDataPeriod is not None:
+            testDataPeriod_local=testDataPeriod
+        
+        evaluationPeriod_local=1
+        if evaluationPeriod is not None:
+            evaluationPeriod_local=evaluationPeriod
+        print(self.DataBuffer_all[-1])
+        
+        
+        if evaluationPeriod_local+testDataPeriod_local < len(self.DataBuffer_all)+1 :
+            with open(evaluationFilename_local,'w') as evaluationcsv_outputIO:
+                evaluationData_temp=[]
+                evaluationData_header=[evaluationPeriod_local,self.DataBuffer_all[0][1]]
+                evaluationData_temp.append(evaluationData_header)
+                for i in self.DataBuffer_all[-evaluationPeriod_local:]:
+                    evaluationData_temp.append(i)
+                writer = csv.writer(evaluationcsv_outputIO,lineterminator='\n')
+                writer.writerows(evaluationData_temp)
+            if testDataPeriod_local > 0:
+                with open(testFilename_local,'w') as testdatacsv_outputIO:
+                    testData_temp=[]
+                    testData_header=[testDataPeriod_local,self.DataBuffer_all[0][1]]
+                    testData_temp.append(testData_header)
+                    if evaluationPeriod_local >=1:
+                        for i in self.DataBuffer_all[-1-testDataPeriod_local:-evaluationPeriod_local]:
+                            testData_temp.append(i)
+                    else:
+                        for i in self.DataBuffer_all[-1-testDataPeriod_local:]:
+                            testData_temp.append(i)
+                    writer = csv.writer(testdatacsv_outputIO,lineterminator='\n')
+                    writer.writerows(testData_temp)
+            with open(trainFilename_local,'w') as traincsv_outputIO:
+                writer = csv.writer(traincsv_outputIO,lineterminator='\n')
+                writer.writerows(self.DataBuffer_all[:-(evaluationPeriod_local+testDataPeriod_local)])
+                    
+        else:
+            raise 'ERROR data is smaller than expected'
+        
     def Print(self):
         print(self.DataBuffer)
         #sleep(1)
 if __name__ == '__main__':
     test=data_preprocess()
     test.cvsData_preprocess()
-    test.Save_csv('train_dataset.csv')
-    test_date=data_preprocess()
-    test_date.cvsData_preprocess(filename_in='stock_test.csv')
-    test_date.Save_csv('test_dataset.csv')
-    
+    test.Save_csv_training_test()
+'''#     test.Save_csv('train_dataset.csv')
+#     test_date=data_preprocess()
+#     test_date.cvsData_preprocess(filename_in='stock_test.csv')
+#     test_date.Save_csv('test_dataset.csv')
+#     '''
