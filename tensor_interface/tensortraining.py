@@ -75,9 +75,11 @@ class TensorTraining(object):
         if test_dataset_filename is not None:
             test_dataset_filename_local=test_dataset_filename
         
-        self.TrainingModel_SaveDir="../Data/TrainingModel"
+        TrainingModel_SaveDir_local="../Data/TrainingModel"
+        if self.TrainingModel_SaveDir is not None:
+            TrainingModel_SaveDir_local=self.TrainingModel_SaveDir
         if training_model_dir is not None:
-            self.TrainingModel_SaveDir=training_model_dir
+            TrainingModel_SaveDir_local=training_model_dir
             
         print(" >>Training csv file: ",train_dataset_filename_local)
         print(" >>Test csv file: ",test_dataset_filename_local)
@@ -123,7 +125,7 @@ class TensorTraining(object):
             feature_columns=feature_columns,
             hidden_units=[64,64,64,64,64,64,64,64,64,64,64,64,128,128,128,128,128],
             n_classes=21,
-            model_dir=self.TrainingModel_SaveDir,
+            model_dir=TrainingModel_SaveDir_local,
             config=tf.contrib.learn.RunConfig(save_checkpoints_secs=1))  
         classifier.fit(x=training_set.data,
                  y=training_set.target,

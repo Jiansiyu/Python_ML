@@ -15,6 +15,7 @@ import csv
 import time
 import sys
 from time import sleep
+from __builtin__ import str
 sys.path.append('../dataIO')
 sys.path.append('../tensor_interface')
 from tensortraining import TensorTraining
@@ -44,7 +45,7 @@ class TrainingEvaluation(object):
             self.Training_timelength=training_timelength
         
         if raw_csv_data_file is None:
-            self.raw_csv_date_file="../dataIO/googlefinance.csv"
+            self.raw_csv_date_file="../Data/StockRawData/googlefinance.csv"
         else:
             self.raw_csv_date_file=raw_csv_data_file
         
@@ -79,6 +80,7 @@ class TrainingEvaluation(object):
         if output_filename is not None:
             output_filename_local=output_filename
         
+        print(">>Raw csv filenname: ", raw_csv_data_filename_local)
         # read the csv file
         with open(raw_csv_data_filename_local) as Stock_list_io:
             Stock_list_lines=Stock_list_io.readlines()
@@ -150,7 +152,7 @@ class TrainingEvaluation(object):
             train_dataset_filename='../Data/tmp/train_dataset_temp'+ str(time.time())+'.csv'
             test_dataset_filename='../Data/tmp/test_dataset_temp'+ str(time.time())+'.csv'
             evaluation_dataset_filename='../Data/tmp/evaluation_dataset_temp'+ str(time.time())+'.csv'
-            trainModel_dir='../Data/TrainingModel/'+str(time.time())
+            trainModel_dir='../Data/TrainingModel/'+ str(time.time())
             
             csv_preprocess=data_preprocess(raw_csv_date_file_local)
             csv_preprocess.cvsData_preprocess(train_raw_csv_filename_temp)
@@ -161,8 +163,8 @@ class TrainingEvaluation(object):
             csv_preprocess1.Save_csv(test_dataset_filename)
             # finish generate the training data
             
-            #train_model=TensorTraining(train_dataset_csvfilename=train_dataset_filename,test_dataset_csv_filename=test_dataset_filename,training_model_dir=trainModel_dir)
-            train_model=TensorTraining(train_dataset_csvfilename=train_dataset_filename,test_dataset_csv_filename=test_dataset_filename)
+            train_model=TensorTraining(train_dataset_csvfilename=train_dataset_filename,test_dataset_csv_filename=test_dataset_filename,training_model_dir=trainModel_dir)
+            #train_model=TensorTraining(train_dataset_csvfilename=train_dataset_filename,test_dataset_csv_filename=test_dataset_filename)
             accuracy,evaluation_result_temp=train_model.Load_data_train_test(evaluatedata_csvfile=evaluation_dataset_filename)
             for i in evaluation_result_temp:
                 Evaluation_array_all.append(i)

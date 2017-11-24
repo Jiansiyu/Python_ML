@@ -26,7 +26,7 @@ class data_preprocess(object):
         if filename_in is not None:
             Stock_list_filename=filename_in
         
-        
+        print(">>Raw data file:",Stock_list_filename)
         with open(Stock_list_filename) as Stock_list_io:
             Stock_list_lines=Stock_list_io.readlines()
         # get the information position  
